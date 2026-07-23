@@ -13,6 +13,7 @@ from .dive_center import dive_center_routes
 from .divesites import divesites_routes
 from .experience import experience_routes
 from .gallery import gallery_routes
+from .google_reviews import greviews_routes
 from .invoice import router as invoice_routes
 from .order import router as order_routes
 from .package import package_routes
@@ -50,4 +51,5 @@ routes = [
     chatbot_routes,
     bundle_routes,
     experience_routes,
+    greviews_routes,
 ]
