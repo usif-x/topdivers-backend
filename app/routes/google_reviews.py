@@ -1,3 +1,4 @@
+import os
 import sqlite3
 from typing import List
 
@@ -5,10 +6,18 @@ from fastapi import APIRouter, HTTPException
 
 greviews_routes = APIRouter(prefix="/google_reviews", tags=["G Reviews"])
 
-DB_PATH = "../static/reviews.db"  # path to your sqlite file
+# Build an absolute path relative to this file, so it doesn't matter
+# what directory you launch uvicorn from.
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "..", "static", "reviews.db")
 
 
 def get_connection():
+    if not os.path.exists(DB_PATH):
+        raise HTTPException(
+            status_code=500,
+            detail=f"Database file not found at: {os.path.abspath(DB_PATH)}",
+        )
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row  # lets us return rows as dicts
     return conn
