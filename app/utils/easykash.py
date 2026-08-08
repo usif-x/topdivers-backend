@@ -37,7 +37,7 @@ class EasyKash:
         data = {
             "amount": payment_data["amount"],
             "currency": payment_data["currency"],
-            "paymentOptions": [2, 4, 6, 31],
+            "paymentOptions": [4, 5, 6, 31, 35],
             "cashExpiry": payment_data.get("cash_expiry", 3),  # Added a default value
             "name": payment_data["buyer_name"],
             "email": payment_data["buyer_email"],
