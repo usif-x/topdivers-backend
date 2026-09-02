@@ -11,6 +11,7 @@ import logging
 import uuid
 from pathlib import Path
 from typing import Optional
+from urllib.parse import urlsplit
 
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
@@ -106,8 +107,21 @@ def get_public_url(object_key: str) -> str:
     If S3_PUBLIC_URL is configured (recommended), it is used as the base.
     Otherwise, falls back to ``{S3_ENDPOINT_URL}/{S3_BUCKET_NAME}``.
     """
-    base = settings.S3_PUBLIC_URL.rstrip("/") if settings.S3_PUBLIC_URL else (
-        f"{settings.S3_ENDPOINT_URL.rstrip('/')}/{settings.S3_BUCKET_NAME}"
+    if object_key.startswith(("http://", "https://")):
+        extracted_key = extract_object_key_from_url(object_key)
+        if extracted_key:
+            object_key = extracted_key
+        else:
+            # Preserve the object path when the URL belongs to an old public host.
+            object_key = urlsplit(object_key).path.lstrip("/")
+            bucket_prefix = f"{settings.S3_BUCKET_NAME}/"
+            if object_key.startswith(bucket_prefix):
+                object_key = object_key[len(bucket_prefix) :]
+
+    base = (
+        settings.S3_PUBLIC_URL.rstrip("/")
+        if settings.S3_PUBLIC_URL
+        else (f"{settings.S3_ENDPOINT_URL.rstrip('/')}/{settings.S3_BUCKET_NAME}")
     )
     return f"{base}/{object_key}"
 
@@ -204,12 +218,12 @@ def extract_object_key_from_url(url: str) -> Optional[str]:
     if settings.S3_PUBLIC_URL:
         base = settings.S3_PUBLIC_URL.rstrip("/") + "/"
         if url.startswith(base):
-            return url[len(base):]
+            return url[len(base) :]
 
     # Fallback: endpoint-based URL
     endpoint_base = f"{settings.S3_ENDPOINT_URL.rstrip('/')}/{settings.S3_BUCKET_NAME}/"
     if url.startswith(endpoint_base):
-        return url[len(endpoint_base):]
+        return url[len(endpoint_base) :]
 
     # Legacy /storage/ paths  (e.g. "/storage/images/abc.jpg")
     if "/storage/" in url:
@@ -234,7 +248,9 @@ def _validate_image_bytes(data: bytes) -> None:
         with Image.open(io.BytesIO(data)) as img:
             img.verify()
     except Exception:
-        raise HTTPException(status_code=400, detail="Invalid image file or corrupted image")
+        raise HTTPException(
+            status_code=400, detail="Invalid image file or corrupted image"
+        )
 
 
 async def upload_image(file: UploadFile, prefix: str = "images") -> str:
