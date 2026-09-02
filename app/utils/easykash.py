@@ -42,7 +42,7 @@ class EasyKash:
             "name": payment_data["buyer_name"],
             "email": payment_data["buyer_email"],
             "mobile": payment_data["buyer_phone"],
-            "redirectUrl": "https://topdivers.online/pay",
+            "redirectUrl": "https://topdivers.hurghada-trips.online/pay",
             "customerReference": customer_ref,
         }
 
