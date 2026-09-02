@@ -483,6 +483,7 @@ async def generate_ai_response(session_id: str, user_message: str) -> str:
                 messages=messages,
                 max_tokens=500,
                 temperature=0.7,
+                extra_body={"thinking": {"type": "disabled"}},
             )
             ai_reply = response.choices[0].message.content
         else:
@@ -561,6 +562,7 @@ Respond in a friendly, persuasive sales tone. Be specific about which product yo
                 ],
                 max_tokens=400,
                 temperature=0.8,
+                extra_body={"thinking": {"type": "disabled"}},
             )
             return response.choices[0].message.content
         else:
